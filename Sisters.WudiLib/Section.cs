@@ -23,6 +23,7 @@ namespace Sisters.WudiLib
         public const string RecordType = "record";
         public const string MusicType = "music";
         public const string AtType = "at";
+        public const string FileType = "file";
 
         /// <summary>
         /// 仅支持大小写字母、数字、短横线（-）、下划线（_）及点号（.）。
@@ -244,6 +245,49 @@ namespace Sisters.WudiLib
         /// <param name="noCache">是否使用缓存。</param>
         /// <returns></returns>
         internal static Section NetImage(string url, bool noCache)
+            => noCache ? new Section(ImageType, ("cache", "0"), ("file", url)) : NetImage(url);
+
+        /// <summary>
+        /// 构造本地文件消息段。
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static Section LocalFile(string file, string name="")
+        {
+            try
+            {
+                return new Section(FileType, 
+                    ("file", CreateFileUri(file)), 
+                    ("name", string.IsNullOrEmpty(name) ? Path.GetFileName(file): name));
+            }
+            catch (UriFormatException e)
+            {
+                throw new FormatException("file 不是合法的路径", e);
+            }
+        }
+
+        internal static Section ByteArrayFile(byte[] bytes, string name) => 
+            new Section(FileType, ("file", $"base64://{Convert.ToBase64String(bytes)}"),
+                ("name", name));
+
+        /// <summary>
+        /// 构造网络文件消息段。
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static Section NetFile(string url, string name="") => 
+            new Section(FileType, ("file", url), 
+            ("name", string.IsNullOrEmpty(name) ? Path.GetFileName(url): name));
+
+        /// <summary>
+        /// 构造网络文件消息段。可以指定是否使用缓存。
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="noCache">是否使用缓存。</param>
+        /// <returns></returns>
+        internal static Section NetFile(string url, bool noCache)
             => noCache ? new Section(ImageType, ("cache", "0"), ("file", url)) : NetImage(url);
 
 #nullable enable

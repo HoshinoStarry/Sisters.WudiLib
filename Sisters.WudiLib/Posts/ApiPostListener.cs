@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,6 +19,8 @@ namespace Sisters.WudiLib.Posts
     /// </summary>
     public partial class ApiPostListener
     {
+        private ILogger _logger = Utilities.GetLogger<ApiPostListener>();
+        
         #region
 
         /// <summary>
@@ -373,12 +376,16 @@ namespace Sisters.WudiLib.Posts
             switch (groupMessage.MessageType)
             {
                 case Message.PrivateType:
-                    MessageEvent?.Invoke(ApiClient, contentObject.ToObject<PrivateMessage>());
+                    var privateMessage = contentObject.ToObject<PrivateMessage>();
+                    _logger.LogInformation("[Message ID: {0}]Received private message from user {1}: {2}", privateMessage.MessageId, privateMessage.UserId, privateMessage.RawMessage);
+                    MessageEvent?.Invoke(ApiClient, privateMessage);
                     break;
                 case Message.GroupType:
                     ProcessGroupMessage(contentObject, groupMessage);
                     break;
                 case Message.DiscussType:
+                    var disscussMessage = contentObject.ToObject<DiscussMessage>();
+                    _logger.LogInformation("[Message ID: {0}]Received disscuss message from user {1} in disscuss group {2}: {3}", disscussMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", disscussMessage.DiscussId, disscussMessage.RawMessage);
                     MessageEvent?.Invoke(ApiClient, contentObject.ToObject<DiscussMessage>());
                     break;
                 default:
@@ -392,19 +399,24 @@ namespace Sisters.WudiLib.Posts
             switch (groupMessage.SubType)
             {
                 case GroupMessage.NormalType:
+                    _logger.LogInformation("[Message ID: {0}]Received group message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
                     MessageEvent?.Invoke(ApiClient, groupMessage);
                     break;
                 case GroupMessage.AnonymousType:
+                    var anonymousMessage = contentObject.ToObject<AnonymousMessage>();
+                    _logger.LogInformation("[Message ID: {0}]Received anonymous group message from anonymous user {1} in group {2}: {3}", anonymousMessage.MessageId, $"{anonymousMessage.Anonymous.Name}({anonymousMessage.Anonymous.Id})", anonymousMessage.GroupId, anonymousMessage.RawMessage);
                     AnonymousMessageEvent?.Invoke(
                         ApiClient,
                         contentObject.ToObject<AnonymousMessage>()
                     );
                     break;
                 case GroupMessage.NoticeType:
+                    _logger.LogInformation("[Message ID: {0}]Received group notice from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
                     GroupNoticeEvent?.Invoke(ApiClient, groupMessage);
                     break;
                 default:
                     // log needed
+                    _logger.LogWarning("[Message ID: {0}]Received group unknown message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
                     break;
             }
         }
@@ -455,6 +467,8 @@ namespace Sisters.WudiLib.Posts
             switch (contentObject[Notice.TypeField].ToObject<string>())
             {
                 case Notice.GroupUpload:
+                    var groupFileNotice = contentObject.ToObject<GroupFileNotice>();
+                    _logger.LogInformation("Received group file upload notice from user {0} in group {1}: {3}", $"{groupFileNotice.UserId}", groupFileNotice.GroupId, groupFileNotice.File.Name);
                     GroupFileUploadedEvent?.Invoke(ApiClient, contentObject.ToObject<GroupFileNotice>());
                     break;
                 case Notice.GroupAdmin:
@@ -467,14 +481,19 @@ namespace Sisters.WudiLib.Posts
                     ProcessGroupMemberIncrease(contentObject);
                     break;
                 case Notice.FriendAdd:
-                    FriendAddedEvent?.Invoke(ApiClient, contentObject.ToObject<FriendAddNotice>());
+                    var friendAddNotice = contentObject.ToObject<FriendAddNotice>();
+                    _logger.LogInformation("Received friend add notice from user {0}", friendAddNotice.UserId);
+                    FriendAddedEvent?.Invoke(ApiClient, friendAddNotice);
                     break;
                 case Notice.GroupBan:
                     // TODO: 此处代码未测试。
+                    var groupBanNotice = contentObject.ToObject<GroupBanNotice>();
+                    _logger.LogInformation("Received group ban notice from user {0} in group {1} by {2}", groupBanNotice.UserId, groupBanNotice.GroupId, groupBanNotice.OperatorId);
                     GroupBanEvent?.Invoke(ApiClient, contentObject.ToObject<GroupBanNotice>());
                     break;
                 default:
                     // TODO: Logging
+                    _logger.LogWarning("Received unknown notice: {0}", contentObject);
                     break;
             }
         }
@@ -485,9 +504,11 @@ namespace Sisters.WudiLib.Posts
             switch (data.SubType)
             {
                 case GroupAdminNotice.SetAdmin:
+                    _logger.LogInformation("Bot was set as admin in group {0}", data.GroupId);
                     GroupAdminSetEvent?.Invoke(ApiClient, data);
                     break;
                 case GroupAdminNotice.UnsetAdmin:
+                    _logger.LogInformation("Bot was unset as admin in group {0}", data.GroupId);
                     GroupAdminUnsetEvent?.Invoke(ApiClient, data);
                     break;
                 default:
@@ -501,10 +522,14 @@ namespace Sisters.WudiLib.Posts
             switch (contentObject[Post.SubTypeField].ToObject<string>())
             {
                 case KickedNotice.Kicked:
-                    KickedEvent?.Invoke(ApiClient, contentObject.ToObject<KickedNotice>());
+                    var kickedNotice = contentObject.ToObject<KickedNotice>();
+                    _logger.LogInformation("Bot was kicked the group {0} by {1}", kickedNotice.GroupId, kickedNotice.OperatorId);
+                    KickedEvent?.Invoke(ApiClient, kickedNotice);
                     break;
                 default:
-                    GroupMemberDecreasedEvent?.Invoke(ApiClient, contentObject.ToObject<GroupMemberDecreaseNotice>());
+                    var groupMemberDecreaseNotice = contentObject.ToObject<GroupMemberDecreaseNotice>();
+                    _logger.LogInformation("User {0} was kicked the group {1} by {2}", groupMemberDecreaseNotice.UserId, groupMemberDecreaseNotice.GroupId, groupMemberDecreaseNotice.OperatorId);
+                    GroupMemberDecreasedEvent?.Invoke(ApiClient, groupMemberDecreaseNotice);
                     break;
             }
         }
@@ -514,10 +539,12 @@ namespace Sisters.WudiLib.Posts
             var data = contentObject.ToObject<GroupMemberIncreaseNotice>();
             if (data.IsMe)
             {
+                _logger.LogInformation("Bot was joined the group {0}", data.GroupId);
                 GroupAddedEvent?.Invoke(ApiClient, data);
             }
             else
             {
+                _logger.LogInformation("User {0} was joined the group {1}", data.UserId, data.GroupId);
                 GroupMemberIncreasedEvent?.Invoke(ApiClient, data);
             }
         }

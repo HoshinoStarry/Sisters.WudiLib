@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using Karambolo.Extensions.Logging.File;
+using Microsoft.Extensions.Logging;
 
 namespace Sisters.WudiLib
 {
@@ -18,5 +21,29 @@ namespace Sisters.WudiLib
             if (argument.Length == 0)
                 throw new ArgumentException($"{paramName}为空。", paramName);
         }
+        
+        public static ILogger GetLogger(string name)
+        {
+            return LoggerFactory.Create(builder =>
+            {
+                builder.AddSimpleConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.SingleLine = true;
+                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+                    }
+                );
+                builder.AddFile(options =>
+                {
+                    options.RootPath = AppContext.BaseDirectory;
+                    options.Files = [new LogFileOptions{ Path = $"logs/{name}_{DateTime.Now:yyyyMMddTHHmmss}.log" }];
+                    options.IncludeScopes = true;
+                });
+            }).CreateLogger(name);
+        }
+
+        public static ILogger GetLogger(Type type) => GetLogger(type.FullName ?? type.Name);
+        
+        public static ILogger GetLogger<T>() => GetLogger(typeof(T));
     }
 }
