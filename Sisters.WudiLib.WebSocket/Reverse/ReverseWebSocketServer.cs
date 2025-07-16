@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Yarp.ReverseProxy.Configuration;
 
 namespace Sisters.WudiLib.WebSocket.Reverse
 {
@@ -22,9 +17,6 @@ namespace Sisters.WudiLib.WebSocket.Reverse
         private Func<HttpListenerRequest, Task<Action<NegativeWebSocketEventListener, long>>> _authentication = _ => Task.FromResult<Action<NegativeWebSocketEventListener, long>>((_, _) => { });
         private Func<long, NegativeWebSocketEventListener> _createListener = _ => new NegativeWebSocketEventListener();
         private readonly Action<HttpListener> _configHttpListener;
-        
-        private WebApplication _app;
-        private string _urlPrefix = null!;
 
         /// <summary>
         /// 通过端口号初始化反向 WebSocket 服务器。
@@ -35,9 +27,7 @@ namespace Sisters.WudiLib.WebSocket.Reverse
         {
             if (port is < IPEndPoint.MinPort or > IPEndPoint.MaxPort)
                 throw new ArgumentOutOfRangeException(nameof(port), "Port 必须是 0-65535 的数。");
-            
-            var internalPort = BuildYarp($"http://0.0.0.0:{port}");
-            _configHttpListener = httpListener => httpListener.Prefixes.Add($"http://127.0.0.1:{internalPort}/");
+            _configHttpListener = httpListener => httpListener.Prefixes.Add($"http://+:{port}/");
             _configHttpListener(_httpListener);
         }
 
@@ -64,34 +54,8 @@ namespace Sisters.WudiLib.WebSocket.Reverse
             {
                 prefix += "/";
             }
-            
-            var internalPort = BuildYarp(prefix);
-            _configHttpListener = httpListener => httpListener.Prefixes.Add($"http://127.0.0.1:{internalPort}/");
+            _configHttpListener = httpListener => httpListener.Prefixes.Add(prefix);
             _configHttpListener(_httpListener);
-        }
-
-        private int BuildYarp(string prefix)
-        {
-            _urlPrefix = prefix;
-            var availablePort = WebSocketUtility.GetAvailablePort();
-            var builder = WebApplication.CreateBuilder();
-            builder.Services.AddLogging(builder => {
-                builder.AddSimpleConsole(options =>
-                {
-                    options.IncludeScopes = true;
-                    options.SingleLine = true;
-                    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                });
-            });
-            builder.Services.AddReverseProxy().LoadFromMemory(routes: [new RouteConfig { RouteId = "onebot_route", ClusterId = "onebot_backend", Match = new RouteMatch { Path = "{**catchAll}" } }], clusters: [new ClusterConfig { ClusterId = "maisharp_backend", Destinations = new Dictionary<string, DestinationConfig> { { "maisharp_backend/destination", new DestinationConfig { Address = $"http://127.0.0.1:{availablePort}" } } } }]);
-
-            _app = builder.Build();
-
-            _app.UseWebSockets();
-            _app.UseRouting();
-            _app.UseEndpoints(endpoints => endpoints.MapReverseProxy());
-            
-            return availablePort;
         }
 
         ///// <summary>
@@ -113,9 +77,8 @@ namespace Sisters.WudiLib.WebSocket.Reverse
             {
                 throw new InvalidOperationException("反向 WebSocket 服务器已经在监听中。");
             }
-            _app.RunAsync(_urlPrefix);
             return RunInternalAsync(cancellationToken);
-            
+
             async Task RunInternalAsync(CancellationToken cancellationToken)
             {
                 try
@@ -277,7 +240,7 @@ namespace Sisters.WudiLib.WebSocket.Reverse
             var convertedAuth = typeof(T) == typeof(NegativeWebSocketEventListener)
                 ? authentication as Func<HttpListenerRequest, Task<Action<NegativeWebSocketEventListener, long>>>
                 : ConvertAuthentication(authentication);
-            if (string.IsNullOrEmpty(accessToken) && selfId is null or <=0)
+            if (accessToken is null && selfId is null)
             {
                 _authentication = convertedAuth;
             }
@@ -324,7 +287,7 @@ namespace Sisters.WudiLib.WebSocket.Reverse
                         return false;
                     }
                 }
-                if (selfId > 0)
+                if (selfId != null)
                 {
                     var idString = selfId.ToString();
                     var selfIdValue = r.Headers["X-Self-ID"];

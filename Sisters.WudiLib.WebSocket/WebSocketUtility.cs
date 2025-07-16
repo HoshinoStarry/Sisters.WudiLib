@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,19 +23,6 @@ namespace Sisters.WudiLib.WebSocket
             }
             Uri uri = uriBuilder.Uri;
             return uri;
-        }
-        
-        public static int GetAvailablePort()
-        {
-            for (var i = 0; i < 100; i++)
-            {
-                var port = Random.Shared.Next(1024, 65535);
-                var properties = IPGlobalProperties.GetIPGlobalProperties();
-                if (properties.GetActiveTcpListeners().All(ep => ep.Port != port))
-                    return port;
-            }
-
-            throw new InvalidOperationException("Cannot found unused port!");
         }
     }
 }
