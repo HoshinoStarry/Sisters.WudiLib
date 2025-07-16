@@ -101,6 +101,8 @@ namespace Sisters.WudiLib
         /// <param name="qq">要 At 的 QQ 号。</param>
         /// <returns>构造的消息。</returns>
         public static SendingMessage At(long qq) => new SendingMessage(Section.At(qq));
+        
+        public static SendingMessage Reply(int messageId) => new SendingMessage(Section.Reply(messageId));
 
         /// <summary>
         /// 构造 At 群、讨论组全体成员的消息。

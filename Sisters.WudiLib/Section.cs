@@ -24,6 +24,7 @@ namespace Sisters.WudiLib
         public const string MusicType = "music";
         public const string AtType = "at";
         public const string FileType = "file";
+        public const string ReplyType = "reply";
 
         /// <summary>
         /// 仅支持大小写字母、数字、短横线（-）、下划线（_）及点号（.）。
@@ -198,6 +199,8 @@ namespace Sisters.WudiLib
         /// <param name="text"></param>
         /// <returns></returns>
         internal static Section Text(string text) => new Section(TextType, (TextParamName, text));
+        
+        internal static Section Reply(int messageId) => new Section(ReplyType, ("id", messageId.ToString()));
 
         /// <summary>
         /// 构造 At 消息段。
