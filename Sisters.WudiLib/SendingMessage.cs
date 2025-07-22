@@ -17,6 +17,7 @@ namespace Sisters.WudiLib
             "dice",
             "music",
             "share",
+            "file"
         };
 
         public IReadOnlyList<Section> Sections => SectionsBase;
@@ -135,10 +136,7 @@ namespace Sisters.WudiLib
         /// <returns>构造的消息。</returns>
         public static SendingMessage ByteArrayImage(byte[] bytes)
         {
-            if (bytes is null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
+            ArgumentNullException.ThrowIfNull(bytes);
 
             return new SendingMessage(Section.ByteArrayImage(bytes));
         }
@@ -187,10 +185,7 @@ namespace Sisters.WudiLib
         /// <returns>构造的消息。</returns>
         public static SendingMessage ByteArrayFile(byte[] bytes, string name)
         {
-            if (bytes is null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
+            ArgumentNullException.ThrowIfNull(bytes);
 
             return new SendingMessage(Section.ByteArrayFile(bytes, name));
         }
