@@ -25,6 +25,19 @@ namespace Sisters.WudiLib
 
         internal static string GetRaw(IEnumerable<Section> sections)
             => string.Concat(sections.Select(section => section.Raw));
+
+        public override string LoggableRaw => GetLoggableRaw(SectionsBase);
+        internal static string GetLoggableRaw(IEnumerable<Section> sections)
+            => string.Concat(sections.Select(section =>
+            {
+                return section.Type switch
+                {
+                    "file" => $"[CQ:file,name={section.Data["name"]}]",
+                     "image" or "record" => $"[CQ:{section.Type}]",
+                    _ => section.Raw,
+                };
+            }));
+        
     }
 #nullable restore
 }

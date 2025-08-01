@@ -11,6 +11,8 @@ namespace Sisters.WudiLib
         public override string Raw => _raw;
 
         protected internal override object Serializing => _raw;
+        
+        public override string LoggableRaw => _raw.Substring(0, 100);
 
         public static RawMessage operator +(RawMessage left, RawMessage right)
             => new RawMessage(left._raw + right._raw);

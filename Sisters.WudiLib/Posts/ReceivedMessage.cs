@@ -124,6 +124,8 @@ namespace Sisters.WudiLib.Posts
         /// </summary>
         public override string Raw => _isString ? _message : GetRaw(_sections);
 
+        public override string LoggableRaw => _isString ? _message : GetLoggableRaw(_sections);
+
         /// <summary>
         /// 获取固定消息。可以将此字符串保存到本地，在任何时候发送时，都可以发送此消息，不用担心缓存被清或者文件过期。
         /// </summary>

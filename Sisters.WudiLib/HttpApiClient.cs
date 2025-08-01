@@ -192,7 +192,7 @@ namespace Sisters.WudiLib
                 message = message.Serializing,
             };
             var result = await PostAsync<SendPrivateMessageResponseData>(PrivateUrl, data);
-            _logger.LogInformation("[Message ID: {0}]Sent message to user {1}: {2}", result.MessageId, qq, message);
+            _logger.LogInformation("[Message ID: {0}]Sent message to user {1}: {2}", result.MessageId, qq, message.LoggableRaw);
             return result;
         }
 
@@ -229,7 +229,7 @@ namespace Sisters.WudiLib
                 message = message.Serializing,
             };
             var result = await PostAsync<SendGroupMessageResponseData>(GroupUrl, data);
-            _logger.LogInformation("[Message ID: {0}]Sent message to group {1}: {2}", result.MessageId, groupId, message);
+            _logger.LogInformation("[Message ID: {0}]Sent message to group {1}: {2}", result.MessageId, groupId, message.LoggableRaw);
             return result;
         }
 
@@ -266,7 +266,7 @@ namespace Sisters.WudiLib
                 message = message.Serializing,
             };
             var result = await PostAsync<SendDiscussMessageResponseData>(DiscussUrl, data);
-            _logger.LogInformation("[Message ID: {0}]Sent message to discuss {1}: {2}", result.MessageId, discussId, message.Raw);
+            _logger.LogInformation("[Message ID: {0}]Sent message to discuss {1}: {2}", result.MessageId, discussId, message.LoggableRaw);
 
             return result;
         }
@@ -285,16 +285,16 @@ namespace Sisters.WudiLib
             switch (endpoint)
             {
                 case PrivateEndpoint privateEndpoint:
-                    _logger.LogInformation("[Message ID: {0}]Sent message to user {1}: {2}", result.MessageId, privateEndpoint.UserId, message.Raw);
+                    _logger.LogInformation("[Message ID: {0}]Sent message to user {1}: {2}", result.MessageId, privateEndpoint.UserId, message.LoggableRaw);
                     break;
                 case GroupEndpoint groupEndpoint:
-                    _logger.LogInformation("[Message ID: {0}]Sent message to group {1}: {2}", result.MessageId, groupEndpoint.GroupId, message.Raw);
+                    _logger.LogInformation("[Message ID: {0}]Sent message to group {1}: {2}", result.MessageId, groupEndpoint.GroupId, message.LoggableRaw);
                     break;
                 case DiscussEndpoint discussEndpoint:
-                    _logger.LogInformation("[Message ID: {0}]Sent message to discuss {1}: {2}", result.MessageId, discussEndpoint.DiscussId, message.Raw);
+                    _logger.LogInformation("[Message ID: {0}]Sent message to discuss {1}: {2}", result.MessageId, discussEndpoint.DiscussId, message.LoggableRaw);
                     break;
                 default:
-                    _logger.LogInformation("[Message ID: {0}]Sent message: {1}", result.MessageId, message.Raw);
+                    _logger.LogInformation("[Message ID: {0}]Sent message: {1}", result.MessageId, message.LoggableRaw);
                     break;
             }
             return result;
@@ -377,7 +377,7 @@ namespace Sisters.WudiLib
         {
             var data = new { message_id = messageId };
             var result = await CallAsync<GetMessageResponseData>("get_msg", data);
-            _logger.LogInformation("[Message ID: {0}]Get message from {1}: {2}", messageId, $"{result.Sender.Nickname}({result.Sender.UserId})", result.Message.Raw);
+            _logger.LogInformation("[Message ID: {0}]Get message from {1}: {2}", messageId, $"{result.Sender.Nickname}({result.Sender.UserId})", result.Message.LoggableRaw);
             return result;
         }
 #nullable restore

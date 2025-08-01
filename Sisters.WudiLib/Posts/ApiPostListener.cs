@@ -377,7 +377,7 @@ namespace Sisters.WudiLib.Posts
             {
                 case Message.PrivateType:
                     var privateMessage = contentObject.ToObject<PrivateMessage>();
-                    _logger.LogInformation("[Message ID: {0}]Received private message from user {1}: {2}", privateMessage.MessageId, privateMessage.UserId, privateMessage.RawMessage);
+                    _logger.LogInformation("[Message ID: {0}]Received private message from user {1}: {2}", privateMessage.MessageId, privateMessage.UserId, privateMessage.Content.LoggableRaw);
                     MessageEvent?.Invoke(ApiClient, privateMessage);
                     break;
                 case Message.GroupType:
@@ -385,7 +385,7 @@ namespace Sisters.WudiLib.Posts
                     break;
                 case Message.DiscussType:
                     var disscussMessage = contentObject.ToObject<DiscussMessage>();
-                    _logger.LogInformation("[Message ID: {0}]Received disscuss message from user {1} in disscuss group {2}: {3}", disscussMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", disscussMessage.DiscussId, disscussMessage.RawMessage);
+                    _logger.LogInformation("[Message ID: {0}]Received disscuss message from user {1} in disscuss group {2}: {3}", disscussMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", disscussMessage.DiscussId, disscussMessage.Content.LoggableRaw);
                     MessageEvent?.Invoke(ApiClient, contentObject.ToObject<DiscussMessage>());
                     break;
                 default:
@@ -399,24 +399,24 @@ namespace Sisters.WudiLib.Posts
             switch (groupMessage.SubType)
             {
                 case GroupMessage.NormalType:
-                    _logger.LogInformation("[Message ID: {0}]Received group message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
+                    _logger.LogInformation("[Message ID: {0}]Received group message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.Content.LoggableRaw);
                     MessageEvent?.Invoke(ApiClient, groupMessage);
                     break;
                 case GroupMessage.AnonymousType:
                     var anonymousMessage = contentObject.ToObject<AnonymousMessage>();
-                    _logger.LogInformation("[Message ID: {0}]Received anonymous group message from anonymous user {1} in group {2}: {3}", anonymousMessage.MessageId, $"{anonymousMessage.Anonymous.Name}({anonymousMessage.Anonymous.Id})", anonymousMessage.GroupId, anonymousMessage.RawMessage);
+                    _logger.LogInformation("[Message ID: {0}]Received anonymous group message from anonymous user {1} in group {2}: {3}", anonymousMessage.MessageId, $"{anonymousMessage.Anonymous.Name}({anonymousMessage.Anonymous.Id})", anonymousMessage.GroupId, anonymousMessage.Content.LoggableRaw);
                     AnonymousMessageEvent?.Invoke(
                         ApiClient,
                         contentObject.ToObject<AnonymousMessage>()
                     );
                     break;
                 case GroupMessage.NoticeType:
-                    _logger.LogInformation("[Message ID: {0}]Received group notice from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
+                    _logger.LogInformation("[Message ID: {0}]Received group notice from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.Content.LoggableRaw);
                     GroupNoticeEvent?.Invoke(ApiClient, groupMessage);
                     break;
                 default:
                     // log needed
-                    _logger.LogWarning("[Message ID: {0}]Received group unknown message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.RawMessage);
+                    _logger.LogWarning("[Message ID: {0}]Received group unknown message from user {1} in group {2}: {3}", groupMessage.MessageId, $"{groupMessage.Sender.Nickname}({groupMessage.UserId})", groupMessage.GroupId, groupMessage.Content.LoggableRaw);
                     break;
             }
         }
