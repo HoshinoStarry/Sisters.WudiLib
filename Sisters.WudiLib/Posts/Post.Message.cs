@@ -29,9 +29,9 @@ namespace Sisters.WudiLib.Posts
         /// 如：<c>msg is <see cref="GroupMessage"/> g</c>。
         /// </summary>
         [JsonProperty(TypeField)]
-        public string MessageType { get; private set; }
+        public string MessageType { get; set; }
         [JsonProperty("message_id")]
-        public int MessageId { get; private set; }
+        public int MessageId { get; set; }
         [JsonProperty("message")]
         private object ObjMessage { get; set; }
         [JsonIgnore]
@@ -39,9 +39,9 @@ namespace Sisters.WudiLib.Posts
         [JsonIgnore]
         public ReceivedMessage Content => _messageLazy.Value;
         [JsonProperty("raw_message")]
-        public string RawMessage { get; private set; }
+        public string RawMessage { get; set; }
         [JsonProperty("font")]
-        public int Font { get; private set; }
+        public int Font { get; set; }
 
         public abstract override Endpoint Endpoint { get; }
         public virtual MessageSource Source => new MessageSource(UserId);

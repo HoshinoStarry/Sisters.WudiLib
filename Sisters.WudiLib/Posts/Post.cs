@@ -23,21 +23,21 @@ namespace Sisters.WudiLib.Posts
         }
 
         [JsonProperty(TypeField)]
-        internal string PostType { get; private set; }
+        internal string PostType { get; set; }
 
         [JsonProperty("time")]
         [JsonConverter(typeof(UnixDateTimeConverter))]
-        public DateTimeOffset Time { get; private set; }
+        public DateTimeOffset Time { get;  set; }
 
         [JsonProperty("self_id")]
-        public long SelfId { get; private set; }
+        public long SelfId { get; set; }
         [JsonProperty("user_id")]
-        public long UserId { get; private set; }
+        public long UserId { get; set; }
 
         public abstract Endpoint Endpoint { get; }
 
         [JsonExtensionData]
-        public IDictionary<string, JToken> ExtensionData { get; private set; }
+        public IDictionary<string, JToken> ExtensionData { get; set; }
     }
 
     [JsonObject(MemberSerialization.OptIn)]
